@@ -1,4 +1,3 @@
-import yaml
 import pandas as pd
 from evidently.report import Report
 from evidently.metric_preset import DataDriftPreset, ClassificationPreset
@@ -7,12 +6,6 @@ def monitor_model():
     """
     This function generates a dashboard with data drift and classification performance.
     """
-    # Load parameters
-    with open("params.yaml", "r") as f:
-        params = yaml.safe_load(f)
-
-    target_col = params["training"]["target"]
-
     # Load data
     train_df = pd.read_csv("data/processed/train.csv")
     test_df = pd.read_csv("data/processed/test.csv")

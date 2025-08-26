@@ -1,6 +1,4 @@
 from sklearn.datasets import load_iris
-import pandas as pd
-from pathlib import Path
 from src.utils import ensure_dirs
 
 if __name__ == "__main__":
