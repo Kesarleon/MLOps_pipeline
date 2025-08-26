@@ -4,8 +4,8 @@ Pipeline end-to-end con buenas prácticas: datos → features → train → eval
 
 ## ⚙️ Stack
 - DVC para orquestación de etapas y versionado de datos
-- MLflow (UI opcional vía Docker) para tracking y Model Registry
-- FastAPI para servir el modelo (Docker)
+- MLflow para tracking y Model Registry
+- FastAPI para servir el modelo
 - Evidently para monitoreo de drift (batch)
 - PyTest + Ruff + pre-commit para calidad
 
@@ -34,7 +34,13 @@ This will create the `monitoring/dashboard.html` file, which you can open in you
 The evaluation metrics are logged to MLflow. To view them, start the MLflow UI:
 
 ```bash
-docker-compose up mlflow
+mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
 Then, open your browser to `http://localhost:5000` to view the MLflow UI.
+
+To serve the model, run the following command:
+
+```bash
+uvicorn service.app:app --host 0.0.0.0 --port 8000
+```
