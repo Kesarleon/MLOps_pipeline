@@ -1,4 +1,4 @@
-.PHONY: setup pipeline train eval serve docker-up test drift
+.PHONY: setup pipeline train eval serve test drift
 
 setup:
 	pip install -U pip
@@ -18,9 +18,6 @@ eval:
 
 serve:
 	uvicorn service.app:app --host 0.0.0.0 --port 8000
-
-docker-up:
-	docker compose up --build
 
 drift:
 	python monitoring/drift_report.py

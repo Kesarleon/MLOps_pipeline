@@ -1,6 +1,5 @@
 import pandas as pd
 import yaml
-from pathlib import Path
 from sklearn.model_selection import train_test_split
 from src.utils import ensure_dirs
 

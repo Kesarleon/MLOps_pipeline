@@ -1,0 +1,41 @@
+name: ci
+on:
+  push: { branches: [ main ] }
+  pull_request:
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -U pip
+          pip install -r requirements.txt
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files
+      - name: Authenticate to GCP for DVC
+        if: secrets.WIF_PROVIDER != ''
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+      - name: Pull DVC data
+        if: secrets.WIF_PROVIDER != ''
+        run: dvc pull -r origin
+      - name: Run DVC pipeline
+        if: secrets.WIF_PROVIDER != ''
+        run: dvc repro
+      - name: Run tests
+        if: secrets.WIF_PROVIDER != ''
+        run: python -m pytest -q

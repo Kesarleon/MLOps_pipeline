@@ -1,0 +1,60 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GCP_PROJECT_ID: "your-gcp-project-id" # TODO: Replace with your GCP project ID
+  ARTIFACT_REGISTRY_REPO: "your-artifact-repo" # TODO: Replace with your Artifact Registry repo name
+  CLOUD_RUN_SERVICE_NAME: "your-cloud-run-service" # TODO: Replace with your Cloud Run service name
+  GCP_REGION: "us-central1" # TODO: Replace with your GCP region
+
+jobs:
+  build-push-and-deploy:
+    name: Build, Push and Deploy to GCP
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }} # e.g. projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
+          service_account: ${{ secrets.GCP_SA_EMAIL }} # e.g. my-service-account@my-project.iam.gserviceaccount.com
+
+      - name: Set up GCloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}" \
+            .
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}"
+
+#      - name: Deploy to Cloud Run
+#        id: deploy
+#        uses: google-github-actions/deploy-cloudrun@v2
+#        with:
+#          service: ${{ env.CLOUD_RUN_SERVICE_NAME }}
+#          region: ${{ env.GCP_REGION }}
+#          image: "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}"
+#          platform: "managed"
+#          flags: "--allow-unauthenticated"
+#
+#      - name: Show Cloud Run URL
+#        run: echo "Deployment URL: ${{ steps.deploy.outputs.url }}"

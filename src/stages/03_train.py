@@ -1,4 +1,5 @@
-import yaml, joblib
+import yaml
+import joblib
 import pandas as pd
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
