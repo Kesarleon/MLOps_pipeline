@@ -10,13 +10,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install -U pip
-      - run: pip install -r requirements.txt
-      - run: pip install pre-commit dvc[s3]
-      - run: pre-commit run --all-files
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -U pip
+          pip install -r requirements.txt
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files
+      - name: Authenticate to GCP for DVC
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
       - name: Pull DVC data
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: dvc pull -r origin
-      - run: pytest -q
+      - name: Run DVC pipeline
+        run: dvc repro
+      - name: Run tests
+        run: python -m pytest -q

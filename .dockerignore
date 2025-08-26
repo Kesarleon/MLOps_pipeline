@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# DVC
+.dvc
+.dvcignore
+dvc.yaml
+params.yaml
+data/
+models/
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.pytest_cache/
+tests/
+
+# Other
+.github/
+Makefile
+README.md
+.pre-commit-config.yaml
