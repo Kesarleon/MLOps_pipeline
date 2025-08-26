@@ -24,14 +24,18 @@ jobs:
       - name: Run pre-commit checks
         run: pre-commit run --all-files
       - name: Authenticate to GCP for DVC
+        if: secrets.WIF_PROVIDER != ''
         id: auth
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
       - name: Pull DVC data
+        if: secrets.WIF_PROVIDER != ''
         run: dvc pull -r origin
       - name: Run DVC pipeline
+        if: secrets.WIF_PROVIDER != ''
         run: dvc repro
       - name: Run tests
+        if: secrets.WIF_PROVIDER != ''
         run: python -m pytest -q
