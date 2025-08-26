@@ -20,3 +20,21 @@ python -m venv .venv
 pip install -U pip
 pip install -r requirements.txt
 pre-commit install
+
+## 📈 Monitoring
+
+To generate and view the monitoring dashboard, run the DVC pipeline:
+
+```bash
+dvc repro
+```
+
+This will create the `monitoring/dashboard.html` file, which you can open in your browser to view the Evidently dashboard.
+
+The evaluation metrics are logged to MLflow. To view them, start the MLflow UI:
+
+```bash
+docker-compose up mlflow
+```
+
+Then, open your browser to `http://localhost:5000` to view the MLflow UI.
