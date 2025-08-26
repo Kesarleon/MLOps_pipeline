@@ -1,0 +1,38 @@
+stages:
+  download:
+    cmd: python src/stages/01_download.py
+    deps: []
+    outs:
+      - data/raw/iris.csv
+
+  prepare:
+    cmd: python src/stages/02_prepare.py
+    deps:
+      - data/raw/iris.csv
+      - params.yaml
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: python src/stages/03_train.py
+    deps:
+      - data/processed/train.csv
+      - params.yaml
+    outs:
+      - models/model.pkl
+
+  evaluate:
+    cmd: python src/stages/04_evaluate.py
+    deps:
+      - data/processed/test.csv
+      - models/model.pkl
+      - params.yaml
+    metrics:
+      - metrics.json
+
+  register:
+    cmd: python src/stages/05_register.py
+    deps:
+      - models/model.pkl
+      - params.yaml
